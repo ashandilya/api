@@ -1,40 +1,38 @@
 <?php
+	error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+
+    require_once 'config.php';
+
+    // Connecting to mysql database
+    $conn = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE) or die('unable to connect.');
+    // require "connect.php";
 	
-	define('DB_HOST', '127.0.0.1');
-	define('DB_USER', 'root');
-	define('DB_PASS', '');
-	define('DB_NAME', 'happilearning');
-	
-	$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-	
-	if(mysqli_connect_errno()){
-		die('Unable to Connect to database'.mysqli_connect_errno());
-	}else
-	{
-		echo "Connection successful"
-	}
-	
-	$Student_Id = $_POST["Student_Id"];
-	$Student_F_Name = $_POST["Student_F_Name"];
-	$Student_L_Name = $_POST["Student_L_Name"];
-	$Phone = $_POST["Phone"];
+// 	$Student_Id = $_POST["Student_Id"];
+	$Student_First_Name = $_POST["Student_First_Name"];
+	$Student_Last_Name = $_POST["Student_LastL_Name"];
+	$Student_Phone_No = $_POST["Student_Phone_No"];
 	$Class = $_POST["Class"];
 	$Email = $_POST["Email"];
 	$Board = $_POST["Board"];
 	$City = $_POST["City"];
 	$School_Name = $_POST["School_Name"];
 	
-	$sqlCheckPhone = "select * from student_registration where Phone = '$Phone'";
+	//$get_Student_Phone_No = $_GET["Student_Phone_No"];
 	
-	$result = mysql_query(mysqli_connect_errno, $sqlCheckPhone);
+	$sqlPhone = "SELECT * FROM `student_registration` WHERE `Student_Phone_No` = '$Student_Phone_No'" ;
+	
+	$result = mysqli_query($conn, $sqlPhone);
 	
 	if(mysqli_num_rows($result)>0)
 	{
 		$status = "exist";
 	}else{
-		$sql = "insert into student_registration values('$Student_Id', '$Student_F_Name', '$Student_L_Name', '$Phone', '$Class', '$Email', '$Board', '$City', '$School_Name');";
+// 		$sql = "insert into student_registration values('', '$Student_First_Name', '$Student_Last_Name', '$Student_Phone_No', '$Class', '$Email', '$Board', '$City', '$School_Name');";
 		
-		if(mysql_query(mysqli_connect_errno, $sql))
+		$sql = "INSERT INTO `student_registration`(`Student_First_Name`, `Student_Phone_No`, `Student_Last_Name`, `Class`, `Email`, `Board`, `City`, `School_Name`) VALUES ('$Student_First_Name','$Student_Phone_No','$Student_Last_Name','$Class','$Email','$Board','$City','$School_Name')";
+		
+		if(mysqli_query($conn, $sql))
 		{
 			$status = "ok";
 		}else{
@@ -42,22 +40,23 @@
 		}			
 	}
 	
-	if($result)
+	$results= array();
+	
+	while($row = mysqli_fetch_array($result))
 	{
-		while($row = mysqli_fetch_array($result))
-		{
-			$data[] = $row;
-		}
+	    array_push($results, array(
+	        'status' => $status,
+	        'Student_First_Name' => $row['Student_First_Name'], 
+	        'Student_Last_Name' => $row['Student_Last_Name'], 
+	        'Student_Phone_No' => $row['Student_Phone_No'], 
+	        'Class' => $row['Class'], 
+	        'Email' => $row['Email'], 
+	        'Board' => $row['Board'], 
+	        'City' => $row['City'], 
+	        'School_Name' => $row['School_Name']
+	    ));
 	}
 	
-	//$sqlSelectClass = "select * from student_registration where Class = '$Class'";
-	
-	//$selectClassQuery = mysql_query(mysqli_connect_errno, $sqlSelectClass);
-	
-	//if(mysql_num_rows($selectClassQuery) == Class )
-	//{
-		
-	//}
-	 echo json_encode(array("response" => $status));
-	 mysqli_close(mysqli_connect_errno);
+	 echo json_encode(array("result" => $results));
+	 mysqli_close($conn);
 ?>
